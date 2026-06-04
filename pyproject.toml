@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solosdk"
+description = "Shared Python SDK for Sol OS actors, workers, and agents"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "Sol OS", email = "admin@callmesolstice.studio"}]
+license = {text = "MIT"}
+dynamic = ["version"]
+
+dependencies = [
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+
+[project.urls]
+Repository = "https://github.com/callmesolstice/SolOSDK"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "sol.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
