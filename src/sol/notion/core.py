@@ -140,6 +140,62 @@ def relation(page_ids: list[str]) -> dict:
     return {"relation": [{"id": pid} for pid in page_ids]}
 
 
+def url(u: str | None) -> dict:
+    return {"url": u}
+
+
+def status(name: str) -> dict:
+    return {"status": {"name": name}}
+
+
+# ---------------------------------------------------------------------------
+# General-purpose Notion API functions
+# ---------------------------------------------------------------------------
+
+def query_db(notion_token: str, database_id: str, filter_payload: dict) -> list[dict]:
+    """Full paginated query with any Notion filter dict. Raises SolError on non-200."""
+    session = get_session()
+    headers = _headers(notion_token)
+    endpoint = f"{NOTION_BASE}/databases/{database_id}/query"
+    pages: list[dict] = []
+    payload: dict = {"filter": filter_payload}
+    while True:
+        resp = session.post(endpoint, headers=headers, json=payload)
+        if not resp.ok:
+            raise SolError(f"Notion query failed {resp.status_code}: {resp.text}")
+        body = resp.json()
+        pages.extend(body.get("results") or [])
+        if not body.get("has_more"):
+            break
+        payload = {"filter": filter_payload, "start_cursor": body["next_cursor"]}
+    return pages
+
+
+def create_page(notion_token: str, database_id: str, properties: dict, cover_url: str | None = None) -> str:
+    """POST a new page. Returns page ID. Raises SolError on failure."""
+    session = get_session()
+    headers = _headers(notion_token)
+    payload: dict = {"parent": {"database_id": database_id}, "properties": properties}
+    if cover_url:
+        payload["cover"] = {"type": "external", "external": {"url": cover_url}}
+    resp = session.post(f"{NOTION_BASE}/pages", headers=headers, json=payload)
+    if not resp.ok:
+        raise SolError(f"Notion create failed {resp.status_code}: {resp.text}")
+    return resp.json()["id"]
+
+
+def update_page(notion_token: str, page_id: str, properties: dict) -> bool:
+    """PATCH an existing page. Returns True on success. Raises SolError on failure."""
+    session = get_session()
+    headers = _headers(notion_token)
+    resp = session.patch(
+        f"{NOTION_BASE}/pages/{page_id}", headers=headers, json={"properties": properties}
+    )
+    if not resp.ok:
+        raise SolError(f"Notion update failed {resp.status_code}: {resp.text}")
+    return True
+
+
 # ---------------------------------------------------------------------------
 # Stub (not in scope for joint #2)
 # ---------------------------------------------------------------------------
