@@ -1,0 +1,45 @@
+{
+    "actorSpecification": 1,
+    "title": "Spotify→Notion Sync",
+    "description": "Credentials and run flags for the playlist sync actor. Store the 4 cred fields as Apify secrets (isSecret=true) — never commit plaintext values.",
+    "schemaVersion": 1,
+    "properties": {
+        "solifyid": {
+            "title": "Spotify Client ID",
+            "type": "string",
+            "isSecret": true,
+            "description": "Spotify OAuth2 client ID (env: solifyid)"
+        },
+        "solifysec": {
+            "title": "Spotify Client Secret",
+            "type": "string",
+            "isSecret": true,
+            "description": "Spotify OAuth2 client secret (env: solifysec)"
+        },
+        "resolify": {
+            "title": "Spotify Refresh Token",
+            "type": "string",
+            "isSecret": true,
+            "description": "Spotify OAuth2 refresh token (env: resolify)"
+        },
+        "solinotion": {
+            "title": "Notion Integration Token",
+            "type": "string",
+            "isSecret": true,
+            "description": "Notion internal integration secret"
+        },
+        "dry_run": {
+            "title": "Dry Run",
+            "type": "boolean",
+            "description": "No writes to Notion. Default true — set false to commit.",
+            "default": true
+        },
+        "update_songs": {
+            "title": "Update Existing Songs",
+            "type": "boolean",
+            "description": "Re-PATCH existing song rows (popularity, etc.). Default false — only creates new.",
+            "default": false
+        }
+    },
+    "required": ["solifyid", "solifysec", "resolify", "solinotion"]
+}

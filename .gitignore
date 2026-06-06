@@ -93,7 +93,12 @@ celerybeat.pid
 
 # Environments
 .env
+.env*
 .venv
+
+# Apify local storage (contains INPUT.json with secrets)
+storage/
+apify_storage/
 env/
 venv/
 ENV/

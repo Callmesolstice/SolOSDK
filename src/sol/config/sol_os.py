@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-
-def get_sol_os_config() -> dict:
-    """Retrieve Sol OS configuration. TODO: implement."""
-    raise NotImplementedError
+# Notion DB ID for the Agent Run Log.
+# FILL THIS IN before first actor run:
+#   1. Open your Notion workspace → find the "Agent Run Log" database
+#   2. Copy the DB ID from the URL: notion.so/<workspace>/<DB_ID>?v=...
+#   3. Replace the placeholder string below (32 hex chars, no hyphens)
+AGENT_RUN_LOG_DB_ID = "68f1a012a78447da9e4bea22571f3807"
