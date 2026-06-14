@@ -184,12 +184,24 @@ def create_page(notion_token: str, database_id: str, properties: dict, cover_url
     return resp.json()["id"]
 
 
-def update_page(notion_token: str, page_id: str, properties: dict) -> bool:
-    """PATCH an existing page. Returns True on success. Raises SolError on failure."""
+def update_page(
+    notion_token: str,
+    page_id: str,
+    properties: dict,
+    cover_url: str | None = None,
+) -> bool:
+    """PATCH an existing page. Returns True on success. Raises SolError on failure.
+
+    When cover_url is set, also sets the page cover to an external image alongside
+    properties. Default None leaves the body unchanged — existing callers unaffected.
+    """
     session = get_session()
     headers = _headers(notion_token)
+    payload: dict = {"properties": properties}
+    if cover_url:
+        payload["cover"] = {"type": "external", "external": {"url": cover_url}}
     resp = session.patch(
-        f"{NOTION_BASE}/pages/{page_id}", headers=headers, json={"properties": properties}
+        f"{NOTION_BASE}/pages/{page_id}", headers=headers, json=payload
     )
     if not resp.ok:
         raise SolError(f"Notion update failed {resp.status_code}: {resp.text}")
