@@ -68,6 +68,39 @@ def get_playlists(spotify_token: str, limit: int = 50) -> list[dict]:
     raise NotImplementedError
 
 
-def get_tracks(spotify_token: str, track_ids: list[str]) -> list[dict]:
-    """Retrieve track details by IDs. TODO: implement."""
-    raise NotImplementedError
+def get_tracks(access_token: str, track_ids: list[str]) -> list[dict]:
+    """GET /tracks?ids=... in chunks of 50 — return one flat list of track dicts.
+
+    Each track dict has `uri` and `album.images` (list of {url, height, width}).
+    Raises on non-200.
+    """
+    session = get_session()
+    headers = {"Authorization": f"Bearer {access_token}"}
+    tracks: list[dict] = []
+
+    for start in range(0, len(track_ids), 50):
+        chunk = track_ids[start : start + 50]
+        resp = session.get(
+            f"{API_BASE}/tracks", headers=headers, params={"ids": ",".join(chunk)}
+        )
+        resp.raise_for_status()
+        tracks.extend(resp.json().get("tracks") or [])
+
+    return tracks
+
+
+def get_playlist_images(access_token: str, playlist_id: str) -> list[dict]:
+    """GET /playlists/{id}?fields=images — return images list.
+
+    On 403 (not owner/collaborator) returns []. Raises on other non-200.
+    """
+    session = get_session()
+    headers = {"Authorization": f"Bearer {access_token}"}
+    resp = session.get(
+        f"{API_BASE}/playlists/{playlist_id}", headers=headers, params={"fields": "images"}
+    )
+    if resp.status_code == 403:
+        log.warning("Skipping playlist %s images — 403 (not owner/collaborator)", playlist_id)
+        return []
+    resp.raise_for_status()
+    return resp.json().get("images") or []
