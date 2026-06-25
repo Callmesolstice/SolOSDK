@@ -152,6 +152,29 @@ def status(name: str) -> dict:
 # General-purpose Notion API functions
 # ---------------------------------------------------------------------------
 
+def file_url(files_property: dict | None) -> str | None:
+    """First usable URL out of a Notion 'Files & media' property value.
+
+    Each entry is either an uploaded file (signed S3 url under ["file"]["url"],
+    expires ~1h) or an external link (["external"]["url"]). The signed url is
+    already present in the query_db response, so no second API call is needed.
+    Returns None when the property is unset / has no files.
+    """
+    if not files_property:
+        return None
+    for f in files_property.get("files", []):
+        ftype = f.get("type")
+        if ftype == "file":
+            u = (f.get("file") or {}).get("url")
+        elif ftype == "external":
+            u = (f.get("external") or {}).get("url")
+        else:
+            u = None
+        if u:
+            return u
+    return None
+
+
 def query_db(notion_token: str, database_id: str, filter_payload: dict) -> list[dict]:
     """Full paginated query with any Notion filter dict. Raises SolError on non-200."""
     session = get_session()
